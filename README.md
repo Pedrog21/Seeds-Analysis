@@ -1,3 +1,3 @@
 # Multivariate Analysis Project
 
-Dataset from https://www.kaggle.com/lodetomasi1995/income-classification
+Dataset from https://www.kaggle.com/uciml/adult-census-income

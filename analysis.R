@@ -2,7 +2,6 @@ library(FactoMineR)
 library(fitdistrplus)
 library(Hmisc)
 library(MASS)
-library(stats)
 setwd('/Users/pedrogoncalves/Documents/OneDrive/MECD/AM/ProjectAM')
 #Creating the Target variable
 Target=c(1,2,2,2,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,
@@ -61,3 +60,50 @@ PCA(PremierLeague[,-lt], scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 #See how many variables explain more than 80% of the total variance
 lt1 <- c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
 sum(pca$eig[lt1,1])/sum(pca$eig[,1])
+
+
+
+
+#cena copiada so pa ver komo ficca
+library(MASS)
+library(e1071)
+library(caret)
+
+smp_size <- floor(0.75 * nrow(PremierLeague))
+train_ind <- sample(seq_len(nrow(PremierLeague)), size = smp_size)
+
+train <- PremierLeague[train_ind, ]
+test <- PremierLeague[-train_ind, ]
+#Build the model
+model2<-lda(Target~goals+total_scoring_att+clean_sheet+interception+last_man_tackle+total_pass,data=train)
+#Summarize the model
+summary(model2)
+#Predict using the model
+test$pred_lda<-predict(model2,test)$class
+#Accuracy of the model
+mtab<-table(test$pred_lda,test$Target)
+confusionMatrix(mtab)
+
+
+#agora SVM 
+
+library(kernlab)
+library(SparseM)
+smp_size <- floor(0.75 * nrow(PremierLeague))
+train_ind <- sample(seq_len(nrow(PremierLeague)), size = smp_size)
+
+train <- PremierLeague[train_ind, ]
+
+test <- PremierLeague[-train_ind, ]
+for(i in 1:ncol(test)){
+  test[is.na(test[,i]), i] <- mean(test[,i], na.rm = TRUE)
+}
+#Build the model
+model9<-svm(Target~goals+total_scoring_att+clean_sheet+interception+last_man_tackle+total_pass+touches,data=train,type = "C-classification")
+#Summarize the model
+summary(model9)
+#Predict using the model
+test$pred_svm<-predict(model9,test)
+#Accuracy of the model
+mtab2<-table(test$pred_svm,test$Target)
+confusionMatrix(mtab2)
