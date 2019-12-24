@@ -1,3 +1,4 @@
+install.packages(c("caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse"))
 library(tidyverse)
 library(dplyr)
 library(naniar)
