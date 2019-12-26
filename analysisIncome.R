@@ -1,4 +1,4 @@
-install.packages(c("caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse"))
+#install.packages(c("fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse"))
 library(tidyverse)
 library(dplyr)
 library(naniar)
@@ -12,6 +12,8 @@ require(corrr)
 library(MASS)
 library(e1071)
 library(caret)
+library(missMDA)
+library(fastDummies)
 #secondary function
 
 mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
@@ -133,5 +135,18 @@ test$pred_lda<-predict(model2,test)$class
 mtab<-table(test$pred_lda,test$income)
 confusionMatrix(mtab)
 
+#Creating dummy variables for categorical data
+dmarital_Status = dummy_cols(df$marital.status)
+doccupation = dummy_cols(df$occupation)
+drelationship = dummy_cols(df$relationship)
+drace = dummy_cols(df$race)
+dsex = dummy_cols(df$sex)
+dnative_country = dummy_cols(df$native.country)
+dincome = dummy_cols(df$income)
 
+#Data Frame with dummy variables
+dumdf = 
+
+estn= estim_ncpFAMD(df,ncp.min=3, ncp.max= 12 )
+res.famd <- FAMD(df)
 
