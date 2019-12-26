@@ -1,4 +1,4 @@
-#install.packages(c("fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse"))
+#install.packages(c("mice","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse"))
 library(tidyverse)
 library(dplyr)
 library(naniar)
@@ -14,6 +14,7 @@ library(e1071)
 library(caret)
 library(missMDA)
 library(fastDummies)
+library(mice)
 #secondary function
 
 mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
@@ -62,7 +63,7 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
 
 income_evaluation <- read.csv("~/GitHub/ProjectAM/Data/adult.csv")
 
-
+income_evaluation = na.omit(income_evaluation)
 
 #1 Data treatment 
 
@@ -136,6 +137,7 @@ mtab<-table(test$pred_lda,test$income)
 confusionMatrix(mtab)
 
 #Creating dummy variables for categorical data
+dworkclass = dummy_cols(df$workclass)
 dmarital_Status = dummy_cols(df$marital.status)
 doccupation = dummy_cols(df$occupation)
 drelationship = dummy_cols(df$relationship)
@@ -145,7 +147,7 @@ dnative_country = dummy_cols(df$native.country)
 dincome = dummy_cols(df$income)
 
 #Data Frame with dummy variables
-dumdf = 
+dumdf = cbind(df[])
 
 estn= estim_ncpFAMD(df,ncp.min=3, ncp.max= 12 )
 res.famd <- FAMD(df)
