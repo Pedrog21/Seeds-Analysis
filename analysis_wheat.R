@@ -1,4 +1,4 @@
-#install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse"))
+#install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools"))
 library(tidyverse)
 library(dplyr)
 library(naniar)
@@ -19,6 +19,11 @@ library(fastDummies)
 library(mice)
 library(reshape2)
 library(ggplot2)
+library(devtools)
+library(ggbiplot)
+install_github("vqv/ggbiplot")
+
+
 seeds = read.delim("~/GitHub/ProjectAM/Data/seeds_dataset.txt")
 str(seeds)
 seeds$type=as.factor(seeds$type)
@@ -66,7 +71,7 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   map2_df(df_comb$X1, df_comb$X2, f)
 }
 
-#Preliminary Analysis (Frank) --- Standardization, Plots...
+##Preliminary Analysis (Frank) --- Standardization, Plots...
 #summary of the data
 summary(seeds)
 #conditional density estimate
@@ -122,10 +127,10 @@ seeds %>%
   as_cordf %>%
   network_plot()
 
-#Decision Tree
+##Decision Tree
 
 
-#SVM/LDA
+##SVM/LDA
 
 #lda
 df=seeds
@@ -149,15 +154,18 @@ plot(model2)
 newdata <- data.frame(type = test[,8], lda = predseeds$x)
 library(ggplot2)
 ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
-#KNN
 
 
-#PCA (Pedro)
+##KNN
+
+
+##PCA (Pedro)----------------------------------------------------------------------------------
 seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
 summary(seeds.pca)
 
-seeds.pca_df <- seeds.pca$rotation[,c(1,2,3)] #Dataset with only the first 3 principal components
+seeds.pca_df <- as.data.frame(seeds.pca$x[,c(1,2,3)]) #Dataset with only the first 3 principal components
+seeds.pca_df$type <- seeds$type #Add the target variable in order to perform classification with this new dataset.
 
 
 
-#Clustering (Ricardo) 3 clusters
+##Clustering (Ricardo) 3 clusters
