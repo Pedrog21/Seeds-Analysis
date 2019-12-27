@@ -14,9 +14,8 @@ library(e1071)
 library(caret)
 library(missMDA)
 library(fastDummies)
-library(mice)
-#secondary function
 
+#secondary function
 mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   df_comb = expand.grid(names(df), names(df),  stringsAsFactors = F) %>% set_names("X1", "X2")
   
@@ -59,9 +58,15 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   map2_df(df_comb$X1, df_comb$X2, f)
 }
 
-
-
+#Importing dataset
 income_evaluation <- read.csv("~/GitHub/ProjectAM/Data/adult.csv")
+
+# replace all the ? with NA and removal of rows with missing values
+for(i in 1:nrow(income_evaluation)){
+  for (j in 1:ncol(income_evaluation)) {
+    
+    if(income_evaluation[i,j]== "?"){income_evaluation[i,j]="NA"}
+  }}
 
 income_evaluation = na.omit(income_evaluation)
 
@@ -71,12 +76,6 @@ plot(education.num ~ education, data=income_evaluation)
 # since higher education level can be completely explained by education years 
 # the variable higher education level is removed
 income_evaluation = income_evaluation[,-c(4)]
-# replace all the ? with NA for simplicity
-for(i in 1:nrow(income_evaluation)){
-  for (j in 1:ncol(income_evaluation)) {
-    
-  if(income_evaluation[i,j]== "?"){income_evaluation[i,j]="NA"}
-}}
 
 #we decided to remove the finalweight variable, because the finalweight is a value of the numbers of people each
 #row represents. Since the dataset is big enough we can assume that the ratio of people from different races is present
@@ -89,7 +88,6 @@ income_evaluation = income_evaluation[,-c(3)]
 income_evaluation$capital.gain = income_evaluation$capital.gain-income_evaluation$capital.loss
 income_evaluation = income_evaluation[,-c(10)]
 
-describe(income_evaluation) # some variables have missing data
 
 #Now we look at the correlation matrix
 df=income_evaluation 
@@ -97,8 +95,6 @@ df=income_evaluation
 df_res = mixed_assoc(df)
 
 # plot results
-
-
 corMatrix = df_res %>%
   ggplot(aes(x,y,fill=assoc))+
   geom_tile()+
@@ -119,14 +115,13 @@ df %>%
 
 
 #the Higher correlation is between sex and relationship, and marital_status and age
-
-
 smp_size <- floor(0.75 * nrow(df))
 train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 
 train <- df[train_ind, ]
 test <- df[-train_ind, ]
-#Build the model
+
+#Building the linear discriminant analysis model
 model2<-lda(income~workclass + education.num + marital.status + race + capital.gain + hours.per.week,data=train)
 #Summarize the model
 summary(model2)
@@ -147,7 +142,8 @@ dnative_country = dummy_cols(df$native.country)
 dincome = dummy_cols(df$income)
 
 #Data Frame with dummy variables
-dumdf = cbind(df[])
+dumdf = cbind(df["age", "education.num", "capital.gain", "hours.per.week"], dworkclass[,3:9], dmarital_Status[,2:7], 
+              doccupation[3:14], drelationship[,2:6], drace[2:5], dsex[,2], dnative_country[,3:42], dincome[2])
 
 estn= estim_ncpFAMD(df,ncp.min=3, ncp.max= 12 )
 res.famd <- FAMD(df)
