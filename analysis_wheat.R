@@ -127,7 +127,28 @@ seeds %>%
 
 #SVM/LDA
 
+#lda
+df=seeds
+smp_size <- floor(0.75 * nrow(df))
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+#Build the model
+model2<-lda(x=train[,-c(8)],grouping = train[,8],prior = c(1/3,1/3,1/3),data=train,CV= FALSE)
+#Summarize the model
+summary(model2)
+#Predict using the model
+test1=test
+predseeds= predict(model2,test[,-c(8)])
+test1$pred_lda<-predict(model2,test[,-c(8)])$class
+S#Accuracy of the model
+mtab<-table(test1$pred_lda,test[,8])
+confusionMatrix(mtab)
+plot(model2)
+newdata <- data.frame(type = test[,8], lda = predseeds$x)
+library(ggplot2)
+ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
 #KNN
 
 
