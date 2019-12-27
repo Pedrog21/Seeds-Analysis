@@ -19,7 +19,7 @@ library(fastDummies)
 library(mice)
 library(reshape2)
 library(ggplot2)
-seeds = read.delim("~/GitHub/ProjectAM/seeds_dataset.txt")
+seeds = read.delim("~/GitHub/ProjectAM/Data/seeds_dataset.txt")
 str(seeds)
 seeds$type=as.factor(seeds$type)
 
