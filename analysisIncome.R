@@ -14,8 +14,8 @@ library(e1071)
 library(caret)
 library(missMDA)
 library(fastDummies)
-#secondary function
 
+#secondary function
 mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   df_comb = expand.grid(names(df), names(df),  stringsAsFactors = F) %>% set_names("X1", "X2")
   
@@ -58,6 +58,7 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   map2_df(df_comb$X1, df_comb$X2, f)
 }
 
+#Importing dataset
 income_evaluation <- read.csv("~/GitHub/ProjectAM/Data/adult.csv")
 
 # replace all the ? with NA and removal of rows with missing values
@@ -87,7 +88,6 @@ income_evaluation = income_evaluation[,-c(3)]
 income_evaluation$capital.gain = income_evaluation$capital.gain-income_evaluation$capital.loss
 income_evaluation = income_evaluation[,-c(10)]
 
-describe(income_evaluation) # some variables have missing data
 
 #Now we look at the correlation matrix
 df=income_evaluation 
@@ -95,8 +95,6 @@ df=income_evaluation
 df_res = mixed_assoc(df)
 
 # plot results
-
-
 corMatrix = df_res %>%
   ggplot(aes(x,y,fill=assoc))+
   geom_tile()+
@@ -117,8 +115,6 @@ df %>%
 
 
 #the Higher correlation is between sex and relationship, and marital_status and age
-
-
 smp_size <- floor(0.75 * nrow(df))
 train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 
@@ -146,7 +142,8 @@ dnative_country = dummy_cols(df$native.country)
 dincome = dummy_cols(df$income)
 
 #Data Frame with dummy variables
-dumdf = cbind(df[])
+dumdf = cbind(df["age", "education.num", "capital.gain", "hours.per.week"], dworkclass[,3:9], dmarital_Status[,2:7], 
+              doccupation[3:14], drelationship[,2:6], drace[2:5], dsex[,2], dnative_country[,3:42], dincome[2])
 
 estn= estim_ncpFAMD(df,ncp.min=3, ncp.max= 12 )
 res.famd <- FAMD(df)
