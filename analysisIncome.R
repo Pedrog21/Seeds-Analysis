@@ -63,7 +63,7 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
 
 income_evaluation <- read.csv("~/GitHub/ProjectAM/Data/adult.csv")
 
-
+income_evaluation = na.omit(income_evaluation)
 
 #1 Data treatment 
 
@@ -77,7 +77,6 @@ for(i in 1:nrow(income_evaluation)){
     
   if(income_evaluation[i,j]== "?"){income_evaluation[i,j]="NA"}
 }}
-income_evaluation = na.omit(income_evaluation)
 
 #we decided to remove the finalweight variable, because the finalweight is a value of the numbers of people each
 #row represents. Since the dataset is big enough we can assume that the ratio of people from different races is present
@@ -153,19 +152,3 @@ dumdf = cbind(df[])
 estn= estim_ncpFAMD(df,ncp.min=3, ncp.max= 12 )
 res.famd <- FAMD(df)
 
-## Gower dissimilarity matrix
-dmm=df
-dmm=dmm[complete.cases(dmm),]
-dmm[,1]=scale(dmm$age)
-dmm$education.num = scale(dmm$education.num)
-dmm$capital.gain = scale(dmm$capital.gain)
-dmm$hours.per.week = scale(dmm$hours.per.week)
-dmn = std(df,include.fac = FALSE )
-daisy(df)
-###klustering
-h2o.init()
-h2o.df <- as.h2o(df[,-c(12)])
-h2o_kmeans <- h2o.kmeans(training_frame = h2o.df,k=7, estimate_k = TRUE,nfolds = 5,keep_cross_validation_predictions = TRUE)
-summary(h2o_kmeans)
-dmn = std(df,include.fac = FALSE )
-daisy(df)
