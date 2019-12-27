@@ -14,7 +14,6 @@ library(e1071)
 library(caret)
 library(missMDA)
 library(fastDummies)
-library(mice)
 #secondary function
 
 mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
@@ -59,9 +58,14 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   map2_df(df_comb$X1, df_comb$X2, f)
 }
 
-
-
 income_evaluation <- read.csv("~/GitHub/ProjectAM/Data/adult.csv")
+
+# replace all the ? with NA and removal of rows with missing values
+for(i in 1:nrow(income_evaluation)){
+  for (j in 1:ncol(income_evaluation)) {
+    
+    if(income_evaluation[i,j]== "?"){income_evaluation[i,j]="NA"}
+  }}
 
 income_evaluation = na.omit(income_evaluation)
 
@@ -71,12 +75,6 @@ plot(education.num ~ education, data=income_evaluation)
 # since higher education level can be completely explained by education years 
 # the variable higher education level is removed
 income_evaluation = income_evaluation[,-c(4)]
-# replace all the ? with NA for simplicity
-for(i in 1:nrow(income_evaluation)){
-  for (j in 1:ncol(income_evaluation)) {
-    
-  if(income_evaluation[i,j]== "?"){income_evaluation[i,j]="NA"}
-}}
 
 #we decided to remove the finalweight variable, because the finalweight is a value of the numbers of people each
 #row represents. Since the dataset is big enough we can assume that the ratio of people from different races is present
@@ -126,7 +124,8 @@ train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 
 train <- df[train_ind, ]
 test <- df[-train_ind, ]
-#Build the model
+
+#Building the linear discriminant analysis model
 model2<-lda(income~workclass + education.num + marital.status + race + capital.gain + hours.per.week,data=train)
 #Summarize the model
 summary(model2)
