@@ -9,7 +9,7 @@ library(MASS)
 library(rcompanion)
 library(lsr)
 require(corrr)
-library(MASS)
+library(stats)
 library(e1071)
 library(GGally)
 ggpairs(seeds, aes(colour = Species, alpha = 0.4))
@@ -153,6 +153,7 @@ ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
 
 
 #PCA (Pedro)
-
+seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
+summary(seeds.pca)
 
 #Clustering (Ricardo) 3 clusters
