@@ -1,3 +1,3 @@
 # Multivariate Analysis Project
 
-Dataset from https://www.kaggle.com/uciml/adult-census-income
+Dataset from https://archive.ics.uci.edu/ml/datasets/seeds
