@@ -156,4 +156,8 @@ ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
 seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
 summary(seeds.pca)
 
+seeds.pca_df <- seeds.pca$rotation[,c(1,2,3)] #Dataset with only the first 3 principal components
+
+
+
 #Clustering (Ricardo) 3 clusters
