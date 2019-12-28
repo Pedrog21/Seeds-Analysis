@@ -134,7 +134,7 @@ seeds %>%
   as_cordf %>%
   network_plot()
 
-#Spliting dataset into training and testing sets
+
 ##Decision Tree--------------------------------------------------------------------------------
 df = seeds
 smp_size <- floor(0.75 * nrow(df))
@@ -144,14 +144,14 @@ train <- df[train_ind, ]
 test <- df[-train_ind, ]
 #Build the model
 dtfit <- rpart(type ~ area + perimeter + compactnes + length + width + asymmetry + length_groove, method="class", data=train)
-plotcp(dtfit)
+plotcp(dtfit) #plot of the cross validation step to choose the complexity parameter (cp)
 summary(dtfit)
 plot(dtfit, uniform=TRUE,
      main="DT with pca data")
-text(dtfit, use.n=TRUE, all=TRUE, cex=.8)
+text(dtfit, use.n=TRUE, all=TRUE, cex=.8) #plot of the tree
 
 
-pred_dt <- predict(dtfit, test, type="class")
+pred_dt <- predict(dtfit, test, type="class") #predictions
 mtab<-table(pred_dt, test[,8])
 confusionMatrix(mtab)
 
@@ -164,14 +164,14 @@ train <- df.pca[train_ind, ]
 test <- df.pca[-train_ind, ]
 #Build the model
 dtfit.pca <- rpart(type ~ PC1 + PC2 + PC3, method="class", data=train)
-plotcp(dtfit.pca)
+plotcp(dtfit.pca) #plot of the cross validation step to choose the complexity parameter (cp)
 summary(dtfit.pca)
 plot(dtfit.pca, uniform=TRUE,
      main="DT with pca data")
-text(dtfit.pca, use.n=TRUE, all=TRUE, cex=.8)
+text(dtfit.pca, use.n=TRUE, all=TRUE, cex=.8) #plot of the tree
 
 
-pred_dt.pca <- predict(dtfit.pca,test,type="class")
+pred_dt.pca <- predict(dtfit.pca,test,type="class") #predictions
 mtab<-table(pred_dt.pca, test[,4])
 confusionMatrix(mtab)
 
@@ -185,7 +185,6 @@ train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 train <- df[train_ind, ]
 test <- df[-train_ind, ]
 
-#Decision Tree
 
 
 #SVM
@@ -220,7 +219,7 @@ summary(seeds.pca)
 
 ggbiplot(seeds.pca)#lets you see how the data points relate to the axes
 
-###Clustering###
+###Clustering###--------------------------------------------------------------------------------
 X = seeds[1:7]
 X_scaled = scale(X)
 
