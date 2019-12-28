@@ -1,10 +1,4 @@
-
-#install.packages(c("mice","GGally","numbers","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools"))
-
 #install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools", "fBasics"))
-
-#install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools", "fBasics"))
-d16a3717eb01fdb8c7bde09cf486158c150ec08d
 library(tidyverse)
 library(dplyr)
 library(rpart)
@@ -17,7 +11,6 @@ library(rcompanion)
 library(lsr)
 require(corrr)
 library(stats)
-library(numbers)
 library(e1071)
 library(GGally)
 ggpairs(seeds, aes(colour = Species, alpha = 0.4))
@@ -151,11 +144,11 @@ train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 train <- df[train_ind, ]
 test <- df[-train_ind, ]
 #Build the model
-dtfit <- rpart(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, method="class", data=train)
+dtfit <- rpart(type ~ area + perimeter + compactnes + length + width + asymmetry + length_groove, method="class", data=train)
 plotcp(dtfit) #plot of the cross validation step to choose the complexity parameter (cp)
 summary(dtfit)
 plot(dtfit, uniform=TRUE,
-     main="DT without pca data")
+     main="DT with pca data")
 text(dtfit, use.n=TRUE, all=TRUE, cex=.8) #plot of the tree
 
 
@@ -229,7 +222,31 @@ seeds.pca_df$type <- seeds$type
 
 ggbiplot(seeds.pca)#lets you see how the data points relate to the axes
 
-###Clustering###--------------------------------------------------------------------------------
+###Clustering without PCA----------------------------------------------------------------------
+
+#Function to correct clusters labels
+label_correct = function(pred){
+  count1 = count(pred[1:70])
+  count2 = count(pred[71:140])
+  count3 = count(pred[141:210])
+  bad_labels = c(count1$x[which.max(count1$freq)], count2$x[which.max(count2$freq)], count3$x[which.max(count3$freq)])
+  print(bad_labels)
+  print(pred)
+  for (i in 1:210){
+    if (pred[i]==bad_labels[1]){
+      pred[i] = 1
+    }
+    else if(pred[i]==bad_labels[2]){
+      pred[i] = 2
+    }
+    else{
+      pred[i] = 3
+    }
+  }
+  result =  pred
+  print(result)
+}
+
 X = seeds[1:7]
 X_scaled = scale(X)
 
@@ -238,63 +255,47 @@ dist_X = dist(X)
 ward_clust = hclust(dist_X, method="ward.D2")
 plot(ward_clust)
 cut_ward = cutree(ward_clust, k = 3)
-
-for (i in 1:210){
-  if (cut_ward[i]==2){
-    cut_ward[i] = 3
-  }
-  else if (cut_ward[i]==3){
-    cut_ward[i] = 2
-  }
-}
+cut_ward = label_correct(cut_ward)
 
 #Hierarchical clustering with ward's distance and scaled variables
 dist_X_scaled = dist(X_scaled)
 ward_clust_scaled = hclust(dist_X_scaled, method="ward.D2")
 plot(ward_clust_scaled)
 cut_ward_scaled = cutree(ward_clust_scaled, k = 3)
+cut_ward_scaled = label_correct(cut_ward_scaled)
 
 #Confusion matrix - ward's clustering
-
-conf_matrix_ward =confusionMatrix(table(true=seeds$type,pred=cut_ward))
+conf_matrix_ward = table(true=seeds$type,pred=cut_ward)
 conf_matrix_ward
-conf_matrix_ward_scaled = confusionMatrix(table(true=seeds$type,pred=cut_ward_scaled))  #scale
+
+conf_matrix_ward_scaled = table(true=seeds$type,pred=cut_ward_scaled)
 conf_matrix_ward_scaled
 
+#Accuracy - ward's clustering
+acc_ward = tr(conf_matrix_ward)/210
+print(paste("Ward's Clustering accuracy = ", toString(acc_ward)))
+
+acc_ward_scaled = tr(conf_matrix_ward_scaled)/210
+print(paste("Ward's Clustering with scaled variables accuracy = ", toString(acc_ward_scaled)))
 
 #KMeans
 kmeans_clust = kmeans(X, 3, iter.max=50, nstart=10)
 classes_kmeans = fitted(kmeans_clust, method="classes")
 
-correct=function(cl){
-  a=cl
-  conf_matrix =confusionMatrix(table(true=seeds$type,pred=cl))
-  h=conf_matrix$overall[1]
-for (i in 1:6){
-  for(j in 1:length(cl)){
-      if(cl[j]== mod(i-1,3)+1){
-        cl[j]=mod(i,3)+1}
-      else if(cl[j] == mod(i,3)+1){
-        cl[j]=mod(i-1,3)+1}
+for (i in 1:210){
+  if (classes_kmeans[i]==2){
+    classes_kmeans[i] = 3
   }
-  
-  conf_matrix =confusionMatrix(table(true=seeds$type,pred=cl))
-  print(conf_matrix$overall[1])
-  if (conf_matrix$overall[1]>h)
-  { h= conf_matrix$overall[1]
-    a=cl}
+  else if (classes_kmeans[i]==3){
+    classes_kmeans[i] = 2
+  }
 }
-  return(a)
-} 
-
-
 
 #KMeans with scaled variables
 kmeans_clust_scaled = kmeans(X_scaled, 3, iter.max=50, nstart=10)
 classes_kmeans_scaled = fitted(kmeans_clust_scaled, method="classes")
 
 #Confusion matrix - kmeans clustering
-classes_kmeans=correct(classes_kmeans)
 conf_matrix_kmeans = table(true=seeds$type,pred=classes_kmeans)
 conf_matrix_kmeans
 
@@ -356,17 +357,26 @@ for (i in 1:210){
   if (classes_kmeans[i]==2){
     classes_kmeans[i] = 1
   }
-  else if (classes_kmeans[i]==3){
+  else if (classes_kmeans[i]==1){
     classes_kmeans[i] = 2
-  }
-  else{
-    classes_kmeans[i] = 3
   }
 }
 
 #KMeans with scaled variables
 kmeans_clust_scaled = kmeans(X_scaled, 3, iter.max=50, nstart=10)
 classes_kmeans_scaled = fitted(kmeans_clust_scaled, method="classes")
+
+for (i in 1:210){
+  if (classes_kmeans_scaled[i]==3){
+    classes_kmeans_scaled[i] = 2
+  }
+  else if (classes_kmeans_scaled[i]==2){
+    classes_kmeans_scaled[i] = 1
+  }
+  else{
+    classes_kmeans_scaled[i] = 3
+  }
+}
 
 #Confusion matrix - kmeans clustering
 conf_matrix_kmeans = table(true=seeds.pca_df$type,pred=classes_kmeans)
@@ -381,5 +391,3 @@ print(paste("KMeans Clustering accuracy = ", toString(acc_kmeans)))
 
 acc_kmeans_scaled = tr(conf_matrix_kmeans_scaled)/210
 print(paste("KMeans Clustering with scaled variables accuracy = ", toString(acc_kmeans_scaled)))
-
-
