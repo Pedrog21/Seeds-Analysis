@@ -19,6 +19,8 @@ library(fastDummies)
 library(mice)
 library(reshape2)
 library(ggplot2)
+library(corrplot)
+library(fBasics)
 seeds = read.delim("~/GitHub/ProjectAM/Data/seeds_dataset.txt")
 str(seeds)
 seeds$type=as.factor(seeds$type)
@@ -69,6 +71,10 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
 #Preliminary Analysis (Frank) --- Standardization, Plots...
 #summary of the data
 summary(seeds)
+
+#Scaling variables
+#seeds = cbind(scale(seeds[1:7]),seeds[8])
+
 #conditional density estimate
 ggplot(data = seeds, mapping = aes(x = area, fill= type,colour = type)) +
   geom_density(alpha = 0.5,position = "fill")
@@ -103,7 +109,7 @@ ggpairs(seeds, aes(colour = type, alpha = 0.4))
 df_res = mixed_assoc(seeds)
 
 # plot results
-
+#Correlation plots
 
 corMatrix = df_res %>%
   ggplot(aes(x,y,fill=assoc))+
@@ -112,6 +118,8 @@ corMatrix = df_res %>%
   scale_fill_gradient(low="red", high="yellow")+
   theme_classic()
 corMatrix
+
+corrplot(cor(seeds[1:7]), type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
 
 seeds %>%
   mixed_assoc() %>%
@@ -122,33 +130,40 @@ seeds %>%
   as_cordf %>%
   network_plot()
 
-#Decision Tree
-
-
-#SVM/LDA
-
-#lda
+#Spliting dataset into training and testing sets
 df=seeds
 smp_size <- floor(0.75 * nrow(df))
 train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 
 train <- df[train_ind, ]
 test <- df[-train_ind, ]
+
+#Decision Tree
+
+
+#SVM
+
+#LDA
 #Build the model
 model2<-lda(x=train[,-c(8)],grouping = train[,8],prior = c(1/3,1/3,1/3),data=train,CV= FALSE)
+
 #Summarize the model
 summary(model2)
+
 #Predict using the model
 test1=test
 predseeds= predict(model2,test[,-c(8)])
 test1$pred_lda<-predict(model2,test[,-c(8)])$class
-S#Accuracy of the model
+
+#Accuracy of the model
 mtab<-table(test1$pred_lda,test[,8])
 confusionMatrix(mtab)
 plot(model2)
 newdata <- data.frame(type = test[,8], lda = predseeds$x)
 library(ggplot2)
 ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
+
+
 #KNN
 
 
@@ -156,4 +171,72 @@ ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
 seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
 summary(seeds.pca)
 
-#Clustering (Ricardo) 3 clusters
+###Clustering###
+X = seeds[1:7]
+X_scaled = scale(X)
+
+#Hierarchical clustering with ward's distance
+dist_X = dist(X)
+ward_clust = hclust(dist_X, method="ward.D2")
+plot(ward_clust)
+cut_ward = cutree(ward_clust, k = 3)
+
+for (i in 1:210){
+  if (cut_ward[i]==2){
+    cut_ward[i] = 3
+  }
+  else if (cut_ward[i]==3){
+    cut_ward[i] = 2
+  }
+}
+
+#Hierarchical clustering with ward's distance and scaled variables
+dist_X_scaled = dist(X_scaled)
+ward_clust_scaled = hclust(dist_X_scaled, method="ward.D2")
+plot(ward_clust_scaled)
+cut_ward_scaled = cutree(ward_clust_scaled, k = 3)
+
+#Confusion matrix - ward's clustering
+conf_matrix_ward = table(true=seeds$type,pred=cut_ward)
+conf_matrix_ward
+
+conf_matrix_ward_scaled = table(true=seeds$type,pred=cut_ward_scaled)
+conf_matrix_ward_scaled
+
+#Accuracy - ward's clustering
+acc_ward = tr(conf_matrix_ward)/210
+print(paste("Ward's Clustering accuracy = ", toString(acc_ward)))
+
+acc_ward_scaled = tr(conf_matrix_ward_scaled)/210
+print(paste("Ward's Clustering with scaled variables accuracy = ", toString(acc_ward_scaled)))
+
+#KMeans
+kmeans_clust = kmeans(X, 3, iter.max=50, nstart=10)
+classes_kmeans = fitted(kmeans_clust, method="classes")
+
+for (i in 1:210){
+  if (classes_kmeans[i]==2){
+    classes_kmeans[i] = 3
+  }
+  else if (classes_kmeans[i]==3){
+    classes_kmeans[i] = 2
+  }
+}
+
+#KMeans with scaled variables
+kmeans_clust_scaled = kmeans(X_scaled, 3, iter.max=50, nstart=10)
+classes_kmeans_scaled = fitted(kmeans_clust_scaled, method="classes")
+
+#Confusion matrix - kmeans clustering
+conf_matrix_kmeans = table(true=seeds$type,pred=classes_kmeans)
+conf_matrix_kmeans
+
+conf_matrix_kmeans_scaled = table(true=seeds$type,pred=classes_kmeans_scaled)
+conf_matrix_kmeans_scaled
+
+#Accuracy - kmeans clustering
+acc_kmeans = tr(conf_matrix_kmeans)/210
+print(paste("KMeans Clustering accuracy = ", toString(acc_kmeans)))
+
+acc_kmeans_scaled = tr(conf_matrix_kmeans_scaled)/210
+print(paste("KMeans Clustering with scaled variables accuracy = ", toString(acc_kmeans_scaled)))
