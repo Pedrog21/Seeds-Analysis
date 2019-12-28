@@ -1,8 +1,10 @@
-<<<<<<< HEAD
+
 #install.packages(c("mice","GGally","numbers","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools"))
-=======
+
 #install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools", "fBasics"))
->>>>>>> d16a3717eb01fdb8c7bde09cf486158c150ec08d
+
+#install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools", "fBasics"))
+d16a3717eb01fdb8c7bde09cf486158c150ec08d
 library(tidyverse)
 library(dplyr)
 library(rpart)
@@ -379,3 +381,5 @@ print(paste("KMeans Clustering accuracy = ", toString(acc_kmeans)))
 
 acc_kmeans_scaled = tr(conf_matrix_kmeans_scaled)/210
 print(paste("KMeans Clustering with scaled variables accuracy = ", toString(acc_kmeans_scaled)))
+
+
