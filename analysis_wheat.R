@@ -23,7 +23,8 @@ library(ggplot2)
 library(devtools)
 library(ggbiplot)
 library(fBasics)
-install_github("vqv/ggbiplot")
+library(corrplot)
+#install_github("vqv/ggbiplot")
 
 
 seeds = read.delim("~/GitHub/ProjectAM/Data/seeds_dataset.txt")
@@ -143,7 +144,8 @@ train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 
 train <- df[train_ind, ]
 test <- df[-train_ind, ]
-#Build the model
+
+#Building the model
 dtfit <- rpart(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, method="class", data=train)
 plotcp(dtfit) #plot of the cross validation step to choose the complexity parameter (cp)
 summary(dtfit)
