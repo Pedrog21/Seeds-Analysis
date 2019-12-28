@@ -218,6 +218,8 @@ ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
 seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
 summary(seeds.pca)
 
+ggbiplot(seeds.pca)#lets you see how the data points relate to the axes
+
 ###Clustering###
 X = seeds[1:7]
 X_scaled = scale(X)
