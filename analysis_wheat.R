@@ -21,7 +21,7 @@ library(mice)
 library(reshape2)
 library(ggplot2)
 library(devtools)
-#library(ggbiplot)
+library(ggbiplot)
 library(fBasics)
 library(corrplot)
 library(numbers)
@@ -166,7 +166,8 @@ train_ind <- sample(seq_len(nrow(df.pca)), size = smp_size)
 
 train <- df.pca[train_ind, ]
 test <- df.pca[-train_ind, ]
-#Build the model
+
+#Building the model
 dtfit.pca <- rpart(type ~ PC1 + PC2 + PC3, method="class", data=train)
 plotcp(dtfit.pca) #plot of the cross validation step to choose the complexity parameter (cp)
 summary(dtfit.pca)
