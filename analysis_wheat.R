@@ -166,6 +166,8 @@ summary(seeds.pca)
 seeds.pca_df <- as.data.frame(seeds.pca$x[,c(1,2,3)]) #Dataset with only the first 3 principal components
 seeds.pca_df$type <- seeds$type #Add the target variable in order to perform classification with this new dataset.
 
+ggbiplot(seeds.pca)#lets you see how the data points relate to the axes
+
 
 
 ##Clustering (Ricardo) 3 clusters
