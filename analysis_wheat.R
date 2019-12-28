@@ -1,6 +1,7 @@
 #install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools"))
 library(tidyverse)
 library(dplyr)
+library(rpart)
 library(naniar)
 library(FactoMineR)
 library(fitdistrplus)
@@ -127,10 +128,47 @@ seeds %>%
   as_cordf %>%
   network_plot()
 
-##Decision Tree
+##Decision Tree--------------------------------------------------------------------------------
+df = seeds
+smp_size <- floor(0.75 * nrow(df))
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
+
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+#Build the model
+dtfit <- rpart(type ~ area + perimeter + compactnes + length + width + asymmetry + length_groove, method="class", data=train)
+plotcp(dtfit)
+summary(dtfit)
+plot(dtfit, uniform=TRUE, 
+     main="DT with pca data")
+text(dtfit, use.n=TRUE, all=TRUE, cex=.8)
 
 
-##SVM/LDA
+pred_dt <- predict(dtfit, test, type="class")
+mtab<-table(pred_dt, test[,8])
+confusionMatrix(mtab)
+
+#DT with pca
+df.pca = seeds.pca_df
+smp_size <- floor(0.75 * nrow(df.pca))
+train_ind <- sample(seq_len(nrow(df.pca)), size = smp_size)
+
+train <- df.pca[train_ind, ]
+test <- df.pca[-train_ind, ]
+#Build the model
+dtfit.pca <- rpart(type ~ PC1 + PC2 + PC3, method="class", data=train)
+plotcp(dtfit.pca)
+summary(dtfit.pca)
+plot(dtfit.pca, uniform=TRUE, 
+     main="DT with pca data")
+text(dtfit.pca, use.n=TRUE, all=TRUE, cex=.8)
+
+
+pred_dt.pca <- predict(dtfit.pca,test,type="class")
+mtab<-table(pred_dt.pca, test[,4])
+confusionMatrix(mtab)
+
+##SVM/LDA---------------------------------------------------------------------------------------
 
 #lda
 df=seeds
@@ -170,4 +208,4 @@ ggbiplot(seeds.pca)#lets you see how the data points relate to the axes
 
 
 
-##Clustering (Ricardo) 3 clusters
+##Clustering (Ricardo) 3 clusters----------------------------------------------------------------
