@@ -22,6 +22,7 @@ library(reshape2)
 library(ggplot2)
 library(devtools)
 library(ggbiplot)
+library(fBasics)
 install_github("vqv/ggbiplot")
 
 
