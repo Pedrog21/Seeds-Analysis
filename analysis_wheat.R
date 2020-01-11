@@ -1,4 +1,4 @@
-#install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools", "fBasics"))
+install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools", "fBasics", "e1071"))
 library(tidyverse)
 library(dplyr)
 library(rpart)
@@ -25,10 +25,11 @@ library(ggbiplot)
 library(fBasics)
 library(corrplot)
 library(numbers)
+library(e1071)
 #install_github("vqv/ggbiplot")
 
 
-seeds = read.delim("~/GitHub/ProjectAM/Data/seeds_dataset.txt")
+seeds = read.delim("~/ProjectAM/Data/seeds_dataset.txt")
 str(seeds)
 seeds$type=as.factor(seeds$type)
 
@@ -225,6 +226,54 @@ text(dtfit.pca, use.n=TRUE, all=TRUE, cex=.8) #plot of the tree
 pred_dt.pca <- predict(dtfit.pca,test,type="class") #predictions
 mtab<-table(pred_dt.pca, test[,4])
 confusionMatrix(mtab)
+
+
+###SUPPORT VECTOR MACHINES-------------------------------------------------------------------
+##SVM without PCA
+#Train/Test Split
+df = seeds
+smp_size <- floor(0.75 * nrow(df))
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
+
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+
+#Building the model
+svmfit <- svm(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, data=train, scale=TRUE, kernel = "polynomial") #Polynomial kernel
+svmfit.r <- svm(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, data=train, scale=TRUE, kernel = "radial") #Radial kernel
+plot(svmfit)
+
+#Evaluation
+pred_svm <- predict(svmfit,test) 
+mtab<-table(pred_svm, test[,8])
+confusionMatrix(mtab)
+
+pred_svm.r <- predict(svmfit.r,test) 
+mtab.r<-table(pred_svm.r, test[,8])
+confusionMatrix(mtab.r)
+
+##SVM with PCA
+#Train/Test Split
+df = seeds.pca_df
+smp_size <- floor(0.75 * nrow(df))
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
+
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+
+#Building the model
+svmfit <- svm(type ~ PC1 + PC2 + PC3, data=train, scale=TRUE, kernel = "polynomial") #Polynomial kernel
+svmfit.r <- svm(type ~ PC1 + PC2 + PC3, data=train, scale=TRUE, kernel = "radial") #Radial kernel
+plot(svmfit)
+
+#Evaluation
+pred_svm <- predict(svmfit,test) 
+mtab<-table(pred_svm, test[,4])
+confusionMatrix(mtab)
+
+pred_svm.r <- predict(svmfit.r,test) 
+mtab.r<-table(pred_svm.r, test[,4])
+confusionMatrix(mtab.r)
 
 ###Clustering without PCA----------------------------------------------------------------------
 
