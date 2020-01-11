@@ -117,7 +117,7 @@ ggplot(data=seeds,mapping = aes(x=type)) +
   geom_bar()        # we have the same amount of each type of plant
 
 pairs(seeds,col=seeds[,8])
-ggpairs(seeds, aes(colour = type, alpha = 0.4))
+ggpairs(seeds, aes(colour = type, alpha = 0.4),axisLabels = "none")
 #correlation
 df_res = mixed_assoc(seeds)
 
@@ -189,6 +189,7 @@ ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
 ##PCA (Pedro)----------------------------------------------------------------------------------
 seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
 summary(seeds.pca)
+summary.PCA(seeds.pca)
 seeds.pca_df <- as.data.frame(seeds.pca$x[,c(1,2,3)]) #Dataset with only the first 3 principal components
 seeds.pca_df$type <- seeds$type
 
