@@ -139,7 +139,7 @@ seeds %>%
   network_plot()
 
 
-##SVM/LDA---------------------------------------------------------------------------------------
+##LDA---------------------------------------------------------------------------------------
 
 #lda
 df=seeds
@@ -149,9 +149,6 @@ train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 train <- df[train_ind, ]
 test <- df[-train_ind, ]
 
-
-
-#SVM
 
 #LDA
 #Build the model
@@ -173,8 +170,6 @@ newdata <- data.frame(type = test[,8], lda = predseeds$x)
 library(ggplot2)
 ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
 
-
-##KNN
 
 
 ##PCA (Pedro)----------------------------------------------------------------------------------
