@@ -25,6 +25,8 @@ library(devtools)
 library(fBasics)
 library(corrplot)
 library(numbers)
+#install.packages("ggcorrplot")
+library(ggcorrplot)
 #install_github("vqv/ggbiplot")
 
 
@@ -83,10 +85,14 @@ summary(seeds)
 #seeds = cbind(scale(seeds[1:7]),seeds[8])
 
 #conditional density estimate
-ggplot(data = seeds, mapping = aes(x = area, fill= type,colour = type)) +
-  geom_density(alpha = 0.5,position = "fill")
+#ggplot(data = seeds, mapping = aes(x = area, fill= type,colour = type)) +
+ # geom_density(alpha = 0.5,position = "fill")
 
-
+  ggplot(d, aes(x = value,fill= type,colour = type)) +
+    facet_wrap(~variable,scales = "free_x",shrink = TRUE) +
+    geom_density(alpha = 0.3,stat = "bin")
+  
+  
 d <- melt(seeds[])
 
 
@@ -121,12 +127,16 @@ df_res = mixed_assoc(seeds)
 corMatrix = df_res %>%
   ggplot(aes(x,y,fill=assoc))+
   geom_tile()+
-  # geom_text(aes(x,y,label=assoc))+
-  scale_fill_gradient(low="red", high="yellow")+
+   geom_text(aes(x,y,label=round(assoc,digits = 2)))+
+  scale_fill_gradient(low="red", high="yellow",) +
   theme_classic()
 corMatrix
 
-corrplot(cor(seeds[1:7]), type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
+
+
+
+ggcorrplot(cor(seeds[1:7]),method = "square",hc.order = TRUE,outline.color = "white",lab=TRUE,insig = "blank",colors = c("blue", "white", "red"))
+corrplot(cor(seeds[1:7]), type = "upper", order = "hclust", tl.col = "black", tl.srt = 45,method = "circle")
 
 seeds %>%
   mixed_assoc() %>%
