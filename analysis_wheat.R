@@ -21,7 +21,7 @@ library(mice)
 library(reshape2)
 library(ggplot2)
 library(devtools)
-#library(ggbiplot)
+library(ggbiplot)
 library(fBasics)
 library(corrplot)
 library(numbers)
@@ -148,47 +148,6 @@ seeds %>%
   network_plot()
 
 
-##Decision Tree--------------------------------------------------------------------------------
-df = seeds
-smp_size <- floor(0.75 * nrow(df))
-train_ind <- sample(seq_len(nrow(df)), size = smp_size)
-
-train <- df[train_ind, ]
-test <- df[-train_ind, ]
-
-#Building the model
-dtfit <- rpart(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, method="class", data=train)
-plotcp(dtfit) #plot of the cross validation step to choose the complexity parameter (cp)
-summary(dtfit)
-plot(dtfit, uniform=TRUE,
-     main="DT without pca data")
-text(dtfit, use.n=TRUE, all=TRUE, cex=.8) #plot of the tree
-
-
-pred_dt <- predict(dtfit, test, type="class") #predictions
-mtab<-table(pred_dt, test[,8])
-confusionMatrix(mtab)
-
-#DT with pca
-df.pca = seeds.pca_df
-smp_size <- floor(0.75 * nrow(df.pca))
-train_ind <- sample(seq_len(nrow(df.pca)), size = smp_size)
-
-train <- df.pca[train_ind, ]
-test <- df.pca[-train_ind, ]
-#Build the model
-dtfit.pca <- rpart(type ~ PC1 + PC2 + PC3, method="class", data=train)
-plotcp(dtfit.pca) #plot of the cross validation step to choose the complexity parameter (cp)
-summary(dtfit.pca)
-plot(dtfit.pca, uniform=TRUE,
-     main="DT with pca data")
-text(dtfit.pca, use.n=TRUE, all=TRUE, cex=.8) #plot of the tree
-
-
-pred_dt.pca <- predict(dtfit.pca,test,type="class") #predictions
-mtab<-table(pred_dt.pca, test[,4])
-confusionMatrix(mtab)
-
 ##SVM/LDA---------------------------------------------------------------------------------------
 
 #lda
@@ -234,6 +193,48 @@ seeds.pca_df <- as.data.frame(seeds.pca$x[,c(1,2,3)]) #Dataset with only the fir
 seeds.pca_df$type <- seeds$type
 
 ggbiplot(seeds.pca)#lets you see how the data points relate to the axes
+
+##Decision Tree--------------------------------------------------------------------------------
+df = seeds
+smp_size <- floor(0.75 * nrow(df))
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
+
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+
+#Building the model
+dtfit <- rpart(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, method="class", data=train)
+plotcp(dtfit) #plot of the cross validation step to choose the complexity parameter (cp)
+summary(dtfit)
+plot(dtfit, uniform=TRUE,
+     main="DT without pca data")
+text(dtfit, use.n=TRUE, all=TRUE, cex=.8) #plot of the tree
+
+
+pred_dt <- predict(dtfit, test, type="class") #predictions
+mtab<-table(pred_dt, test[,8])
+confusionMatrix(mtab)
+
+#DT with pca
+df.pca = seeds.pca_df
+smp_size <- floor(0.75 * nrow(df.pca))
+train_ind <- sample(seq_len(nrow(df.pca)), size = smp_size)
+
+train <- df.pca[train_ind, ]
+test <- df.pca[-train_ind, ]
+
+#Building the model
+dtfit.pca <- rpart(type ~ PC1 + PC2 + PC3, method="class", data=train)
+plotcp(dtfit.pca) #plot of the cross validation step to choose the complexity parameter (cp)
+summary(dtfit.pca)
+plot(dtfit.pca, uniform=TRUE,
+     main="DT with pca data")
+text(dtfit.pca, use.n=TRUE, all=TRUE, cex=.8) #plot of the tree
+
+
+pred_dt.pca <- predict(dtfit.pca,test,type="class") #predictions
+mtab<-table(pred_dt.pca, test[,4])
+confusionMatrix(mtab)
 
 ###Clustering without PCA----------------------------------------------------------------------
 
@@ -290,13 +291,13 @@ X_scaled = scale(X)
 dist_X = dist(X)
 ward_clust = hclust(dist_X, method="ward.D2")
 cut_ward = cutree(ward_clust, k = 3)
-cut_ward = correct(cut_ward)
+cut_ward = label_correct(cut_ward)
 
 #Hierarchical clustering with ward's distance and scaled variables
 dist_X_scaled = dist(X_scaled)
 ward_clust_scaled = hclust(dist_X_scaled, method="ward.D2")
 cut_ward_scaled = cutree(ward_clust_scaled, k = 3)
-cut_ward_scaled = correct(cut_ward_scaled)
+cut_ward_scaled = label_correct(cut_ward_scaled)
 
 #Confusion matrix - ward's clustering
 conf_matrix_ward = confusionMatrix(as.factor(cut_ward), seeds$type)
@@ -308,12 +309,12 @@ conf_matrix_ward_scaled
 #KMeans
 kmeans_clust = kmeans(X, 3, iter.max=50, nstart=10)
 classes_kmeans = fitted(kmeans_clust, method="classes")
-classes_kmeans = correct(classes_kmeans)
+classes_kmeans = label_correct(classes_kmeans)
 
 #KMeans with scaled variables
 kmeans_clust_scaled = kmeans(X_scaled, 3, iter.max=50, nstart=10)
 classes_kmeans_scaled = fitted(kmeans_clust_scaled, method="classes")
-classes_kmeans_scaled = correct(classes_kmeans_scaled)
+classes_kmeans_scaled = label_correct(classes_kmeans_scaled)
 
 #Confusion matrix - kmeans clustering
 conf_matrix_kmeans = confusionMatrix(as.factor(classes_kmeans), seeds$type)
@@ -331,13 +332,13 @@ X_pca3_scaled = scale(X)
 dist_X_pca3 = dist(X_pca3)
 ward_clust_pca3 = hclust(dist_X_pca3, method="ward.D2")
 cut_ward_pca3 = cutree(ward_clust_pca3, k = 3)
-cut_ward_pca3 = correct(cut_ward_pca3)
+cut_ward_pca3 = label_correct(cut_ward_pca3)
 
 #Hierarchical clustering with ward's distance and scaled variables
 dist_X_pca3_scaled = dist(X_pca3_scaled)
 ward_clust_pca3_scaled = hclust(dist_X_pca3_scaled, method="ward.D2")
 cut_ward_pca3_scaled = cutree(ward_clust_pca3_scaled, k = 3)
-cut_ward_pca3_scaled = correct(cut_ward_pca3_scaled)
+cut_ward_pca3_scaled = label_correct(cut_ward_pca3_scaled)
 
 #Confusion matrix - ward's clustering
 conf_matrix_ward_pca3 = confusionMatrix(as.factor(cut_ward_pca3), seeds.pca_df$type)
@@ -349,12 +350,12 @@ conf_matrix_ward_pca3_scaled
 #KMeans
 kmeans_clust_pca3 = kmeans(X_pca3, 3, iter.max=50, nstart=10)
 classes_kmeans_pca3 = fitted(kmeans_clust_pca3, method="classes")
-classes_kmeans_pca3 = correct(classes_kmeans_pca3)
+classes_kmeans_pca3 = label_correct(classes_kmeans_pca3)
 
 #KMeans with scaled variables
 kmeans_clust_pca3_scaled = kmeans(X_pca3_scaled, 3, iter.max=50, nstart=10)
 classes_kmeans_pca3_scaled = fitted(kmeans_clust_pca3_scaled, method="classes")
-classes_kmeans_pca3_scaled = correct(classes_kmeans_pca3_scaled)
+classes_kmeans_pca3_scaled = label_correct(classes_kmeans_pca3_scaled)
 
 #Confusion matrix - kmeans clustering
 conf_matrix_kmeans_pca3 = confusionMatrix(as.factor(classes_kmeans_pca3), seeds.pca_df$type)
