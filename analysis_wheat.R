@@ -236,7 +236,8 @@ test <- df[-train_ind, ]
 #Building the model
 svmfit <- svm(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, data=train, scale=TRUE, kernel = "polynomial") #Polynomial kernel
 svmfit.r <- svm(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, data=train, scale=TRUE, kernel = "radial") #Radial kernel
-plot(svmfit)
+plot(cmdscale(dist(train[,-8])),col = as.integer(train[,8]),pch = c("o","+")[1:150 %in% svmfit$index + 1])
+
 
 #Evaluation
 pred_svm <- predict(svmfit,test) 
@@ -258,8 +259,8 @@ test <- df[-train_ind, ]
 
 #Building the model
 svmfit <- svm(type ~ PC1 + PC2 + PC3, data=train, scale=TRUE, kernel = "polynomial") #Polynomial kernel
-svmfit.r <- svm(type ~ PC1 + PC2 + PC3, data=train, scale=TRUE, kernel = "radial") #Radial kernel
-plot(svmfit)
+svmfit.r <- svm(type ~ PC1 + PC2 + PC3, data=train, scale=TRUE, kernel = "radial", method="C-classification") #Radial kernel
+plot(cmdscale(dist(train[,-4])),col = as.integer(train[,4]),pch = c("o","+")[1:150 %in% svmfit$index + 1])
 
 #Evaluation
 pred_svm <- predict(svmfit,test) 
@@ -512,3 +513,34 @@ test1$pred_lda<-predict(model2,test[,-c(8)])$class
 mtab<-table(test1$pred_lda,test[,8])
 confusionMatrix(mtab)
 #plot(model2)
+
+
+
+#3.Support Vector Machines
+
+seedsnewlabel = seeds
+seedsnewlabel$type = cut_ward_scaled
+seedsnewlabel$type=as.factor(seedsnewlabel$type)
+
+df = seedsnewlabel
+smp_size <- floor(0.75 * nrow(df))
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
+
+train <- df[train_ind, ]
+test <- df[-train_ind, ]
+
+
+#Building the model
+svmfit <- svm(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, data=train, scale=TRUE, kernel = "polynomial") #Polynomial kernel
+svmfit.r <- svm(type ~ area + perimeter + compactness + length + width + asymmetry + length_groove, data=train, scale=TRUE, kernel = "radial") #Radial kernel
+plot(cmdscale(dist(train[,-8])),col = as.integer(train[,8]),pch = c("o","+")[1:150 %in% svmfit$index + 1])
+
+
+#Evaluation
+pred_svm <- predict(svmfit,test)
+mtab<-table(pred_svm, test[,8])
+confusionMatrix(mtab)
+
+pred_svm.r <- predict(svmfit.r,test) 
+mtab.r<-table(pred_svm.r, test[,8])
+confusionMatrix(mtab.r)
