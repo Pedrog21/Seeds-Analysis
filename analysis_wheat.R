@@ -1,4 +1,4 @@
-install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools", "fBasics", "e1071"))
+#install.packages(c("mice","GGally","fastDummies","missMDA", "caret", "corrr", "dplyr", "e1071", "FactoMineR", "fitdistrplus", "Hmisc", "lsr", "naniar", "rcompanion", "tidyverse", "devtools", "fBasics", "e1071"))
 library(tidyverse)
 library(dplyr)
 library(rpart)
@@ -29,7 +29,7 @@ library(e1071)
 #install_github("vqv/ggbiplot")
 
 
-seeds = read.delim("~/ProjectAM/Data/seeds_dataset.txt")
+seeds = read.delim("~/Github/ProjectAM/Data/seeds_dataset.txt")
 str(seeds)
 seeds$type=as.factor(seeds$type)
 
