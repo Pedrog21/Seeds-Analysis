@@ -9,6 +9,7 @@ library(Hmisc)
 library(MASS)
 library(rcompanion)
 library(lsr)
+library(ggdendro)
 require(corrr)
 library(stats)
 library(e1071)
@@ -28,9 +29,9 @@ library(corrplot)
 library(numbers)
 library(e1071)
 library(psych)
-#install_github("vqv/ggbiplot")
+install_github("vqv/ggbiplot")
 
-  
+
 seeds = read.delim("~/Github/ProjectAM/Data/seeds_dataset.txt")
 str(seeds)
 seeds$type=as.factor(seeds$type)
@@ -176,7 +177,7 @@ highlight_df = newdata[,1] != newdata2[,1]
 ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5) +
   geom_point(data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2), color='tomato1',size=3,alpha=0.9) +
   geom_label(
-    label="3", 
+    label="3",
     data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2) ,
     label.padding = unit(0.1,"lines"), # Rectangle size around label
     label.size = 0.31,
@@ -187,7 +188,9 @@ ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5) +
 ggbiplot(model2,groups = train$type, ellipse = TRUE, circle = TRUE)
 #  gghighlight(newdata[,1] != newdata2[,1],use_group_by = FALSE)
 
+#with pca
 
+df.pca= seeds.pca_df
 
 ##PCA ----------------------------------------------------------------------------------
 seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
@@ -257,11 +260,11 @@ plot(cmdscale(dist(train[,-8])),col = as.integer(train[,8]),pch = c("o","+")[1:1
 
 
 #Evaluation
-pred_svm <- predict(svmfit,test) 
+pred_svm <- predict(svmfit,test)
 mtab<-table(pred_svm, test[,8])
 confusionMatrix(mtab)
 
-pred_svm.r <- predict(svmfit.r,test) 
+pred_svm.r <- predict(svmfit.r,test)
 mtab.r<-table(pred_svm.r, test[,8])
 confusionMatrix(mtab.r)
 
@@ -280,11 +283,11 @@ svmfit.r <- svm(type ~ PC1 + PC2 + PC3, data=train, scale=TRUE, kernel = "radial
 plot(cmdscale(dist(train[,-4])),col = as.integer(train[,4]),pch = c("o","+")[1:150 %in% svmfit$index + 1])
 
 #Evaluation
-pred_svm <- predict(svmfit,test) 
+pred_svm <- predict(svmfit,test)
 mtab<-table(pred_svm, test[,4])
 confusionMatrix(mtab)
 
-pred_svm.r <- predict(svmfit.r,test) 
+pred_svm.r <- predict(svmfit.r,test)
 mtab.r<-table(pred_svm.r, test[,4])
 confusionMatrix(mtab.r)
 
@@ -323,15 +326,15 @@ correct=function(cl){
       else if(cl[j] == mod(i,3)+1){
         cl[j]=mod(i-1,3)+1}
     }
-    
+
     conf_matrix =confusionMatrix(table(true=seeds$type,pred=cl))
-    
+
     if (conf_matrix$overall[1]>h)
     { h= conf_matrix$overall[1]
     a=cl}
   }
   return(a)
-} 
+}
 
 
 
@@ -358,6 +361,21 @@ conf_matrix_ward
 conf_matrix_ward_scaled = confusionMatrix(as.factor(cut_ward_scaled), seeds$type)
 conf_matrix_ward_scaled
 
+newdata <-data.frame(type = test[,8], lda = predseeds$x)
+newdata2 <- data.frame(type = test1$pred_lda, lda = predseeds$x)
+highlight_cl = cut_ward_scaled != seeds$type
+
+ggplot() +
+  geom_segment(data=segment(wcs), aes(x=x, y=y, xend=xend, yend=yend)) +
+  geom_point(data=label(wcs), aes(x=x, y=y,color=seeds$type), size=3,alpha = 0.5) +
+  geom_point(data = label(wcs)[highlight_cl,],aes(x=x, y=y,shape=as.factor(cut_ward_scaled[highlight_cl])))+
+  theme(axis.line.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        legend.title=element_blank(),
+        panel.background=element_rect(fill="white"),
+        panel.grid=element_blank())
+
+wcs=as.ggdend(as.dendrogram(ward_clust_scaled))
 #KMeans
 kmeans_clust = kmeans(X, 3, iter.max=50, nstart=10)
 classes_kmeans = fitted(kmeans_clust, method="classes")
@@ -562,6 +580,6 @@ pred_svm <- predict(svmfit,test)
 mtab<-table(pred_svm, test[,8])
 confusionMatrix(mtab)
 
-pred_svm.r <- predict(svmfit.r,test) 
+pred_svm.r <- predict(svmfit.r,test)
 mtab.r<-table(pred_svm.r, test[,8])
 confusionMatrix(mtab.r)
