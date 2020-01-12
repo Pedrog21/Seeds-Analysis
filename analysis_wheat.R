@@ -9,6 +9,7 @@ library(Hmisc)
 library(MASS)
 library(rcompanion)
 library(lsr)
+library(ggdendro)
 require(corrr)
 library(stats)
 library(e1071)
@@ -28,7 +29,7 @@ library(corrplot)
 library(numbers)
 library(e1071)
 library(psych)
-#install_github("vqv/ggbiplot")
+install_github("vqv/ggbiplot")
 
 
 seeds = read.delim("~/Github/ProjectAM/Data/seeds_dataset.txt")
@@ -187,8 +188,50 @@ ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5) +
 ggbiplot(model2,groups = train$type, ellipse = TRUE, circle = TRUE)
 #  gghighlight(newdata[,1] != newdata2[,1],use_group_by = FALSE)
 
+#with pca
+
+df.pca= seeds.pca_df
+
+smp_size <- floor(0.75 * nrow(df.pca))
+train_ind <- sample(seq_len(nrow(df.pca)), size = smp_size)
+
+train <- df.pca[train_ind, ]
+test <- df.pca[-train_ind, ]
 
 
+#LDA
+#Build the model
+model2<-lda(x=train[,-c(4)],grouping = train[,4],prior = c(1/3,1/3,1/3),data=train,CV= FALSE)
+
+#Summarize the model
+summary(model2)
+
+#Predict using the model
+test1=test
+predseeds= predict(model2,test[,-c(4)])
+test1$pred_lda<-predict(model2,test[,-c(4)])$class
+
+#Accuracy of the model
+mtab<-table(test1$pred_lda,test[,4])
+
+confusionMatrix(mtab)
+plot(model2)
+newdata <-data.frame(type = test[,8], lda = predseeds$x)
+newdata2 <- data.frame(type = test1$pred_lda, lda = predseeds$x)
+highlight_df = newdata[,1] != newdata2[,1]
+
+ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5) +
+  geom_point(data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2), color='tomato1',size=3,alpha=0.9) +
+  geom_label(
+    label="3", 
+    data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2) ,
+    label.padding = unit(0.1,"lines"), # Rectangle size around label
+    label.size = 0.31,
+    color = "black",
+    fill="royalblue2",
+    nudge_x = 0.18,alpha = 0.7)
+
+ggbiplot(model2,groups = train$type, ellipse = TRUE, circle = TRUE)
 ##PCA (Pedro)----------------------------------------------------------------------------------
 seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
 summary(seeds.pca)
@@ -358,6 +401,21 @@ conf_matrix_ward
 conf_matrix_ward_scaled = confusionMatrix(as.factor(cut_ward_scaled), seeds$type)
 conf_matrix_ward_scaled
 
+newdata <-data.frame(type = test[,8], lda = predseeds$x)
+newdata2 <- data.frame(type = test1$pred_lda, lda = predseeds$x)
+highlight_cl = cut_ward_scaled != seeds$type
+
+ggplot() + 
+  geom_segment(data=segment(wcs), aes(x=x, y=y, xend=xend, yend=yend)) + 
+  geom_point(data=label(wcs), aes(x=x, y=y,color=seeds$type), size=3,alpha = 0.5) +
+  geom_point(data = label(wcs)[highlight_cl,],aes(x=x, y=y,shape=as.factor(cut_ward_scaled[highlight_cl])))+
+  theme(axis.line.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        legend.title=element_blank(),
+        panel.background=element_rect(fill="white"),
+        panel.grid=element_blank())
+
+wcs=as.ggdend(as.dendrogram(ward_clust_scaled))
 #KMeans
 kmeans_clust = kmeans(X, 3, iter.max=50, nstart=10)
 classes_kmeans = fitted(kmeans_clust, method="classes")
