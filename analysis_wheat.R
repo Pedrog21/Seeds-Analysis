@@ -26,6 +26,7 @@ library(fBasics)
 library(corrplot)
 library(numbers)
 library(e1071)
+library(psych)
 #install_github("vqv/ggbiplot")
 
 
