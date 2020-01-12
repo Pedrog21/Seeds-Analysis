@@ -12,6 +12,7 @@ library(lsr)
 require(corrr)
 library(stats)
 library(e1071)
+library(gghighlight)
 library(GGally)
 ggpairs(seeds, aes(colour = Species, alpha = 0.4))
 library(caret)
@@ -82,7 +83,7 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
 summary(seeds)
 
 #Scaling variables
-#seeds = cbind(scale(seeds[1:7]),seeds[8])
+seedsscale = cbind(scale(seeds[1:7]),seeds[8])
 
 #conditional density estimate
 #ggplot(data = seeds, mapping = aes(x = area, fill= type,colour = type)) +
@@ -176,11 +177,26 @@ test1$pred_lda<-predict(model2,test[,-c(8)])$class
 
 #Accuracy of the model
 mtab<-table(test1$pred_lda,test[,8])
+
 confusionMatrix(mtab)
 plot(model2)
-newdata <- data.frame(type = test[,8], lda = predseeds$x)
-library(ggplot2)
-ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5)
+newdata <-data.frame(type = test[,8], lda = predseeds$x)
+newdata2 <- data.frame(type = test1$pred_lda, lda = predseeds$x)
+highlight_df = newdata[,1] != newdata2[,1]
+
+ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5) +
+  geom_point(data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2), color='tomato1',size=3,alpha=0.9) +
+  geom_label(
+    label="3", 
+    data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2) ,
+    label.padding = unit(0.1,"lines"), # Rectangle size around label
+    label.size = 0.31,
+    color = "black",
+    fill="royalblue2",
+    nudge_x = 0.18,alpha = 0.7)
+
+ggbiplot(model2,groups = train$type, ellipse = TRUE, circle = TRUE)
+#  gghighlight(newdata[,1] != newdata2[,1],use_group_by = FALSE)
 
 
 ##KNN
@@ -370,6 +386,7 @@ conf_matrix_kmeans_pca3_scaled
 
 # for the clustering we will use the hierachical clustering using the ward method and Euclidean distance
 
+
 #1.Decision Tree
 
 seedsnewlabel = seeds
@@ -377,9 +394,12 @@ seedsnewlabel$type = cut_ward_scaled
 seedsnewlabel$type=as.factor(seedsnewlabel$type)
 
 df = seedsnewlabel
-smp_size <- floor(0.75 * nrow(df))
-train_ind <- sample(seq_len(nrow(df)), size = smp_size)
 
+##PCA (Pedro)----------------------------------------------------------------------------------
+
+seeds.pca_df$type <- seedsnewlabel$type
+
+##___________________________________
 train <- df[train_ind, ]
 test <- df[-train_ind, ]
 
