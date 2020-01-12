@@ -30,7 +30,7 @@ library(e1071)
 library(psych)
 #install_github("vqv/ggbiplot")
 
-
+  
 seeds = read.delim("~/Github/ProjectAM/Data/seeds_dataset.txt")
 str(seeds)
 seeds$type=as.factor(seeds$type)
@@ -78,7 +78,7 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   map2_df(df_comb$X1, df_comb$X2, f)
 }
 
-##Preliminary Analysis (Frank) --- Standardization, Plots...
+##Preliminary Analysis
 #summary of the data
 summary(seeds)
 
@@ -189,7 +189,7 @@ ggbiplot(model2,groups = train$type, ellipse = TRUE, circle = TRUE)
 
 
 
-##PCA (Pedro)----------------------------------------------------------------------------------
+##PCA ----------------------------------------------------------------------------------
 seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
 summary(seeds.pca)
 seeds.pca_df <- as.data.frame(seeds.pca$x[,c(1,2,3)]) #Dataset with only the first 3 principal components
@@ -197,7 +197,7 @@ seeds.pca_df$type <- seeds$type
 
 ggbiplot(seeds.pca)#lets you see how the data points relate to the axes
 
-##Decision Tree--------------------------------------------------------------------------------
+##Decision Tree  --------------------------------------------------------------------------------
 df = seeds
 smp_size <- floor(0.75 * nrow(df))
 train_ind <- sample(seq_len(nrow(df)), size = smp_size)
@@ -430,7 +430,7 @@ seedsnewlabel$type=as.factor(seedsnewlabel$type)
 
 df = seedsnewlabel
 
-##PCA (Pedro)----------------------------------------------------------------------------------
+##PCA ----------------------------------------------------------------------------------
 
 seeds.pca_df$type <- seedsnewlabel$type
 
