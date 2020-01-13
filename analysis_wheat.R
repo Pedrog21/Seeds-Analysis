@@ -81,7 +81,7 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   map2_df(df_comb$X1, df_comb$X2, f)
 }
 
-##Preliminary Analysis (Frank) --- Standardization, Plots...
+##Preliminary Analysis
 #summary of the data
 summary(seeds)
 
@@ -146,6 +146,16 @@ seeds %>%
   as_cordf %>%
   network_plot()
 
+#Outlier Analysis
+#Type 1
+outlier(seeds[1:70, 1:7])
+
+#Type 2
+outlier(seeds[71:140, 1:7])
+
+#Type 3
+outlier(seeds[141:210, 1:7])
+
 
 ##LDA---------------------------------------------------------------------------------------
 
@@ -182,7 +192,7 @@ highlight_df = newdata[,1] != newdata2[,1]
 ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5) +
   geom_point(data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2), color='tomato1',size=3,alpha=0.9) +
   geom_label(
-    label="3", 
+    label="3",
     data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2) ,
     label.padding = unit(0.1,"lines"), # Rectangle size around label
     label.size = 0.31,
@@ -197,47 +207,7 @@ ggbiplot(model2,groups = train$type, ellipse = TRUE, circle = TRUE)
 
 df.pca= seeds.pca_df
 
-smp_size <- floor(0.75 * nrow(df.pca))
-train_ind <- sample(seq_len(nrow(df.pca)), size = smp_size)
-
-train <- df.pca[train_ind, ]
-test <- df.pca[-train_ind, ]
-
-
-#LDA
-#Build the model
-model2<-lda(x=train[,-c(4)],grouping = train[,4],prior = c(1/3,1/3,1/3),data=train,CV= FALSE)
-
-#Summarize the model
-summary(model2)
-
-#Predict using the model
-test1=test
-predseeds= predict(model2,test[,-c(4)])
-test1$pred_lda<-predict(model2,test[,-c(4)])$class
-
-#Accuracy of the model
-mtab<-table(test1$pred_lda,test[,4])
-
-confusionMatrix(mtab)
-plot(model2)
-newdata <-data.frame(type = test[,8], lda = predseeds$x)
-newdata2 <- data.frame(type = test1$pred_lda, lda = predseeds$x)
-highlight_df = newdata[,1] != newdata2[,1]
-
-ggplot(newdata) + geom_point(aes(lda.LD1, lda.LD2, colour = type), size = 2.5) +
-  geom_point(data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2), color='tomato1',size=3,alpha=0.9) +
-  geom_label(
-    label="3", 
-    data=newdata[highlight_df,], aes(x=lda.LD1,y=lda.LD2) ,
-    label.padding = unit(0.1,"lines"), # Rectangle size around label
-    label.size = 0.31,
-    color = "black",
-    fill="royalblue2",
-    nudge_x = 0.18,alpha = 0.7)
-
-ggbiplot(model2,groups = train$type, ellipse = TRUE, circle = TRUE)
-##PCA (Pedro)----------------------------------------------------------------------------------
+##PCA ----------------------------------------------------------------------------------
 seeds.pca <- prcomp(seeds[,1:7], center = TRUE, scale = TRUE)
 summary(seeds.pca)
 seeds.pca_df <- as.data.frame(seeds.pca$x[,c(1,2,3)]) #Dataset with only the first 3 principal components
@@ -245,7 +215,7 @@ seeds.pca_df$type <- seeds$type
 
 ggbiplot(seeds.pca)#lets you see how the data points relate to the axes
 
-##Decision Tree--------------------------------------------------------------------------------
+##Decision Tree  --------------------------------------------------------------------------------
 df = seeds
 smp_size <- floor(0.75 * nrow(df))
 train_ind <- sample(seq_len(nrow(df)), size = smp_size)
@@ -305,11 +275,11 @@ plot(cmdscale(dist(train[,-8])),col = as.integer(train[,8]),pch = c("o","+")[1:1
 
 
 #Evaluation
-pred_svm <- predict(svmfit,test) 
+pred_svm <- predict(svmfit,test)
 mtab<-table(pred_svm, test[,8])
 confusionMatrix(mtab)
 
-pred_svm.r <- predict(svmfit.r,test) 
+pred_svm.r <- predict(svmfit.r,test)
 mtab.r<-table(pred_svm.r, test[,8])
 confusionMatrix(mtab.r)
 
@@ -328,11 +298,11 @@ svmfit.r <- svm(type ~ PC1 + PC2 + PC3, data=train, scale=TRUE, kernel = "radial
 plot(cmdscale(dist(train[,-4])),col = as.integer(train[,4]),pch = c("o","+")[1:150 %in% svmfit$index + 1])
 
 #Evaluation
-pred_svm <- predict(svmfit,test) 
+pred_svm <- predict(svmfit,test)
 mtab<-table(pred_svm, test[,4])
 confusionMatrix(mtab)
 
-pred_svm.r <- predict(svmfit.r,test) 
+pred_svm.r <- predict(svmfit.r,test)
 mtab.r<-table(pred_svm.r, test[,4])
 confusionMatrix(mtab.r)
 
@@ -371,15 +341,15 @@ correct=function(cl){
       else if(cl[j] == mod(i,3)+1){
         cl[j]=mod(i-1,3)+1}
     }
-    
+
     conf_matrix =confusionMatrix(table(true=seeds$type,pred=cl))
-    
+
     if (conf_matrix$overall[1]>h)
     { h= conf_matrix$overall[1]
     a=cl}
   }
   return(a)
-} 
+}
 
 
 
@@ -410,8 +380,8 @@ newdata <-data.frame(type = test[,8], lda = predseeds$x)
 newdata2 <- data.frame(type = test1$pred_lda, lda = predseeds$x)
 highlight_cl = cut_ward_scaled != seeds$type
 
-ggplot() + 
-  geom_segment(data=segment(wcs), aes(x=x, y=y, xend=xend, yend=yend)) + 
+ggplot() +
+  geom_segment(data=segment(wcs), aes(x=x, y=y, xend=xend, yend=yend)) +
   geom_point(data=label(wcs), aes(x=x, y=y,color=seeds$type), size=3,alpha = 0.5) +
   geom_point(data = label(wcs)[highlight_cl,],aes(x=x, y=y,shape=as.factor(cut_ward_scaled[highlight_cl])))+
   theme(axis.line.y=element_blank(),
@@ -493,7 +463,7 @@ seedsnewlabel$type=as.factor(seedsnewlabel$type)
 
 df = seedsnewlabel
 
-##PCA (Pedro)----------------------------------------------------------------------------------
+##PCA ----------------------------------------------------------------------------------
 
 seeds.pca_df$type <- seedsnewlabel$type
 
@@ -652,6 +622,6 @@ pred_svm <- predict(svmfit,test)
 mtab<-table(pred_svm, test[,8])
 confusionMatrix(mtab)
 
-pred_svm.r <- predict(svmfit.r,test) 
+pred_svm.r <- predict(svmfit.r,test)
 mtab.r<-table(pred_svm.r, test[,8])
 confusionMatrix(mtab.r)
