@@ -141,6 +141,16 @@ seeds %>%
   as_cordf %>%
   network_plot()
 
+#Outlier Analysis
+#Type 1
+outlier(seeds[1:70, 1:7])
+
+#Type 2
+outlier(seeds[71:140, 1:7])
+
+#Type 3
+outlier(seeds[141:210, 1:7])
+
 
 ##LDA---------------------------------------------------------------------------------------
 
